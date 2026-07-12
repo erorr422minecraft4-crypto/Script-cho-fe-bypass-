@@ -1,36 +1,28 @@
-function exPro(root)
-	for _, v in pairs(root:GetChildren()) do
-		if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id=100091122003498" then
-			v.Parent = nil
-		elseif v:IsA("BasePart") then
-			v.Material = "Plastic"
-			v.Transparency = 0
-			local One = Instance.new("Decal", v)
-			local Two = Instance.new("Decal", v)
-			local Three = Instance.new("Decal", v)
-			local Four = Instance.new("Decal", v)
-			local Five = Instance.new("Decal", v)
-			local Six = Instance.new("Decal", v)
-			One.Texture = "http://www.roblox.com/asset/?id=100091122003498"
-			Two.Texture = "http://www.roblox.com/asset/?id=100091122003498"
-			Three.Texture = "http://www.roblox.com/asset/?id=100091122003498"
-			Four.Texture = "http://www.roblox.com/asset/?id=100091122003498"
-			Five.Texture = "http://www.roblox.com/asset/?id=100091122003498"
-			Six.Texture = "http://www.roblox.com/asset/?id=100091122003498"--put id in here i will put it in description
-			One.Face = "Front"
-			Two.Face = "Back"
-			Three.Face = "Right"
-			Four.Face = "Left"
-			Five.Face = "Top"
-			Six.Face = "Bottom"
+local TEXTURE_ID = "rbxassetid://100091122003498"
+
+for _, obj in ipairs(workspace:GetDescendants()) do
+	if obj:IsA("BasePart") then
+
+		-- Xóa decal cũ
+		for _, d in ipairs(obj:GetChildren()) do
+			if d:IsA("Decal") then
+				d:Destroy()
+			end
 		end
-		exPro(v)
+
+		-- Thêm decal 6 mặt
+		for _, face in ipairs(Enum.NormalId:GetEnumItems()) do
+			local decal = Instance.new("Decal")
+			decal.Texture = TEXTURE_ID
+			decal.Face = face
+			decal.Parent = obj
+		end
+
+		-- MeshPart thì đổi TextureID luôn nếu có
+		if obj:IsA("MeshPart") then
+			pcall(function()
+				obj.TextureID = TEXTURE_ID
+			end)
+		end
 	end
 end
-function asdf(root)
-	for _, v in pairs(root:GetChildren()) do
-		asdf(v)
-	end
-end
-exPro(game.Workspace)
-asdf(game.Workspace)
