@@ -1,0 +1,185 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RequestCommand = ReplicatedStorage
+	:WaitForChild("HDAdminHDClient")
+	.Signals
+	.RequestCommandSilent
+
+RequestCommand:InvokeServer(";music 101389433601746")
+RequestCommand:InvokeServer(";pitch 1")
+RequestCommand:InvokeServer(";volume inf")
+
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local tool
+
+for _,v in player:GetDescendants() do
+	if v.Name == "SyncAPI" then
+		tool = v.Parent
+	end
+end
+
+for _,v in game.ReplicatedStorage:GetDescendants() do
+	if v.Name == "SyncAPI" then
+		tool = v.Parent
+	end
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+function _(args)
+	remote:InvokeServer(unpack(args))
+end
+
+function SetCollision(part,boolean)
+	_( {"SyncCollision", {{Part=part,CanCollide=boolean}}} )
+end
+
+function SetAnchor(boolean,part)
+	_( {"SyncAnchor", {{Part=part,Anchored=boolean}}} )
+end
+
+function CreatePart(cf,parent)
+	_( {"CreatePart","Normal",cf,parent} )
+end
+
+function DestroyPart(part)
+	_( {"Remove",{part}} )
+end
+
+function MovePart(part,cf)
+	_( {"SyncMove", {{Part=part,CFrame=cf}}} )
+end
+
+function Resize(part,size,cf)
+	_( {"SyncResize", {{Part=part,CFrame=cf,Size=size}}} )
+end
+
+function AddMesh(part)
+	_( {"CreateMeshes", {{Part=part}}} )
+end
+
+function SetMesh(part,meshid)
+	_( {"SyncMesh", {{Part=part,MeshId="rbxassetid://"..meshid}}} )
+end
+
+function SetTexture(part, texid)
+	_( {"SyncMesh", {{Part=part,TextureId="rbxassetid://"..texid}}} )
+end
+
+function SetName(part, name)
+	_( {"SetName",{part},name} )
+end
+
+function MeshResize(part,size)
+	_( {"SyncMesh", {{Part=part,Scale=size}}} )
+end
+
+function Weld(part1, part2,lead)
+	_( {"CreateWelds",{part1,part2},lead} )
+end
+
+function SetLocked(part,boolean)
+	_( {"SetLocked",{part},boolean} )
+end
+
+function SetTrans(part,int)
+	_( {"SyncMaterial", {{Part=part,Transparency=int}}} )
+end
+
+function SpawnDecal(part,side)
+	_( {"CreateTextures", {{Part=part,Face=side,TextureType="Decal"}}} )
+end
+
+function AddDecal(part,asset,side)
+	_( {"SyncTexture", {{Part=part,Face=side,TextureType="Decal",Texture="rbxassetid://"..asset}}} )
+end
+
+
+function Sky(id)
+	local root = char:WaitForChild("HumanoidRootPart")
+	local pos = root.CFrame + Vector3.new(0,6,0)
+	CreatePart(pos,workspace)
+	task.wait(0.2)
+
+	for _,v in workspace:GetChildren() do
+		if v:IsA("BasePart") and (v.Position-pos.Position).Magnitude < 1 then
+			SetName(v,"Sky")
+			AddMesh(v)
+			SetMesh(v,"111891702759441")
+			SetTexture(v,id)
+			MeshResize(v,Vector3.new(9000,9000,9000))
+			SetLocked(v,true)
+			SetAnchor(true,v)
+			break
+		end
+	end
+end
+
+Sky("133258444714826")
+
+
+local Players = game:GetService("Players")
+
+local ids = {
+	"133258444714826",
+	"133258444714826",
+	"133258444714826"
+}
+
+while task.wait(0.01) do
+	for _,plr in ipairs(Players:GetPlayers()) do
+		local character = plr.Character
+		if not character then continue end
+
+		local head = character:FindFirstChild("Head")
+		if not head then continue end
+
+		local spawnCF = head.CFrame * CFrame.new(0, 1.5, 0)
+
+		-- crear part
+		CreatePart(spawnCF, workspace)
+
+		-- esperar a que el part exista
+		local particle
+		local timeout = os.clock() + 0.5
+
+		while not particle and os.clock() < timeout do
+			for _,v in workspace:GetChildren() do
+				if v:IsA("BasePart")
+				and v.Name ~= "particle"
+				and (v.Position - spawnCF.Position).Magnitude < 0.5 then
+					particle = v
+					break
+				end
+			end
+			task.wait()
+		end
+
+		if not particle then
+			warn("Partícula no encontrada, skip")
+			continue
+		end
+
+		-- configurar partícula
+		SetName(particle, "particle")
+
+		local id = ids[math.random(#ids)]
+		SpawnDecal(particle, Enum.NormalId.Front)
+		AddDecal(particle, id, Enum.NormalId.Front)
+		SpawnDecal(particle, Enum.NormalId.Back)
+		AddDecal(particle, id, Enum.NormalId.Back)
+
+		SetTrans(particle, 1)
+		Resize(particle, Vector3.new(3.5, 3.5, 0.2), particle.CFrame)
+		SetLocked(particle, true)
+		SetCollision(particle, false)
+		Weld(particle, head, head)
+
+		task.spawn(function()
+			for i = 1, 16 do
+				MovePart(particle, particle.CFrame + Vector3.new(0, 0.25, 0))
+				task.wait(0.01)
+			end
+			DestroyPart(particle)
+		end)
+	end
+end
